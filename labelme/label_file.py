@@ -88,7 +88,7 @@ class LabelFile(object):
             with open(filename, "r") as f:
                 data = json.load(f)
 
-            if data["imageData"] is not None:
+            if "imageData" in data and data["imageData"] is not None:
                 imageData = base64.b64decode(data["imageData"])
                 if PY2 and QT4:
                     imageData = utils.img_data_to_png_data(imageData)
@@ -111,8 +111,10 @@ class LabelFile(object):
                     flags=s.get("flags", {}),
                     description=s.get("description"),
                     group_id=s.get("group_id"),
-                    mask=utils.img_b64_to_arr(s["mask"]) if s.get("mask") else None,
-                    other_data={k: v for k, v in s.items() if k not in shape_keys},
+                    mask=utils.img_b64_to_arr(
+                        s["mask"]) if s.get("mask") else None,
+                    other_data={k: v for k,
+                                v in s.items() if k not in shape_keys},
                 )
                 for s in data["shapes"]
             ]
