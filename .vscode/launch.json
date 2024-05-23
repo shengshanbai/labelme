@@ -18,7 +18,7 @@
             "name": "convert",
             "type": "debugpy",
             "request": "launch",
-            "program": "${workspaceFolder}/labelme/cli/coco2017_to_json.py",
+            "program": "${workspaceFolder}/labelme/cli/miap_parse.py",
             "console": "integratedTerminal",
             "env": {
                 "PYTHONPATH": "${workspaceFolder}"

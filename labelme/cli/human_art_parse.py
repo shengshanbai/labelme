@@ -5,18 +5,8 @@ from pathlib import Path
 import os
 import shutil
 from tqdm import tqdm
-
-
-def clean_folder(folder):
-    for filename in os.listdir(folder):
-        file_path = os.path.join(folder, filename)
-        try:
-            if os.path.isfile(file_path) or os.path.islink(file_path):
-                os.unlink(file_path)
-            elif os.path.isdir(file_path):
-                shutil.rmtree(file_path)
-        except Exception as e:
-            print('Failed to delete %s. Reason: %s' % (file_path, e))
+from labelme.cli.coco2017_to_json import clean_folder
+from labelme.utils import md5_util
 
 
 def main(args):
@@ -28,19 +18,21 @@ def main(args):
     # 清理之前的输出
     clean_folder(output_image_dir)
     clean_folder(output_ann_dir)
-    input_db_env = lmdb_util.read_lmdb(args.input_db)
-    ann_json = lmdb_util.read_json(input_db_env, args.ann_file)
+    human_art_parent = Path(args.ann_file).parent.parent.parent
+    # 读取ann_file
+    with open(args.ann_file, 'r') as ann_f:
+        ann_coco = json.load(ann_f)
     # 搜集需要类别的id
     select_c_ids = []
     select_c_names = []
-    for ann_category_item in ann_json["categories"]:
+    for ann_category_item in ann_coco["categories"]:
         if ann_category_item["name"] in args.select_categories:
             select_c_ids.append(ann_category_item["id"])
             select_c_names.append(ann_category_item["name"])
     # 遍历标记，按图片对标记分类
     image_ann_map = {}
     ignore_image_ids = []
-    for ann_item in ann_json["annotations"]:
+    for ann_item in ann_coco["annotations"]:
         if ann_item["category_id"] in select_c_ids:
             # 是选中的类
             if ann_item["iscrowd"] > 0 and args.ignore_crowd:
@@ -55,14 +47,17 @@ def main(args):
         if image_id in image_ann_map:
             image_ann_map.pop(image_id)
     # 遍历图片，转换对应的标注到labelme标注
-    for image_item in tqdm(ann_json["images"]):
+    for image_item in tqdm(ann_coco["images"]):
         image_id = image_item["id"]
+        if args.only_real_human and "real_human" not in image_item["file_name"]:
+            # 只处理真人图片
+            continue
         if image_id in image_ann_map:
-            image_name = image_item['file_name']
-            image_binary = lmdb_util.read_binary(
-                input_db_env, f"{args.image_dir}/{image_name}")
-            with open(output_image_dir.joinpath(image_name), "wb") as image_f:
-                image_f.write(image_binary)
+            image_path = human_art_parent.joinpath(image_item["file_name"])
+            image_name = md5_util.md5_of_file(
+                str(image_path))
+            shutil.copyfile(image_path, output_image_dir.joinpath(
+                image_name + image_path.suffix))
             shapes = []
             for ann_item in image_ann_map[image_id]:
                 label_name = select_c_names[select_c_ids.index(
@@ -79,29 +74,26 @@ def main(args):
             json_item = {
                 "version": "5.4.1",
                 "shapes": shapes,
-                "imagePath": "../images/" + image_name,
-                "imageHeight": image_item["width"],
-                "imageWidth": image_item["height"],
+                "imagePath": "../images/" + image_name + image_path.suffix,
+                "imageHeight": image_item["height"],
+                "imageWidth": image_item["width"],
                 "flags": None,
             }
-            json_file = output_ann_dir.joinpath(
-                os.path.splitext(image_name)[0] + '.json')
+            json_file = output_ann_dir.joinpath(image_name + '.json')
             with open(json_file, 'w') as json_f:
                 json.dump(json_item, json_f)
-    input_db_env.close()
 
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser("转换coco2017的标注到labelme的标注")
-    parser.add_argument("--input_db", type=str,
-                        default="/home/ssbai/datas/coco2017_db")
-    parser.add_argument("--ann_file", type=str,
-                        default="/annotations/instances_val2017.json")
-    parser.add_argument("--image_dir", type=str, default="/val2017")
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(
+        description='转换human art标签到labelme格式')
+    parser.add_argument(
+        "--ann_file", default="/home/ssbai/datas/HumanArt/annotations/training_humanart_coco.json")
+    parser.add_argument("--output_image_dir", default="./output/images")
+    parser.add_argument("--output_json_dir", default="./output/anns")
     parser.add_argument("--select_categories", nargs="+",
                         type=str, default=["person"])
     parser.add_argument("--ignore_crowd", default=True)
-    parser.add_argument("--output_image_dir", default="./output/images")
-    parser.add_argument("--output_json_dir", default="./output/anns")
+    parser.add_argument("--only_real_human", default=True)
     args = parser.parse_args()
     main(args)
