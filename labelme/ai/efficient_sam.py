@@ -12,8 +12,10 @@ from . import _utils
 
 class EfficientSam:
     def __init__(self, encoder_path, decoder_path):
-        self._encoder_session = onnxruntime.InferenceSession(encoder_path)
-        self._decoder_session = onnxruntime.InferenceSession(decoder_path)
+        self._encoder_session = onnxruntime.InferenceSession(
+            encoder_path, providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
+        self._decoder_session = onnxruntime.InferenceSession(
+            decoder_path, providers=['CUDAExecutionProvider', 'CPUExecutionProvider'])
 
         self._lock = threading.Lock()
         self._image_embedding_cache = collections.OrderedDict()
@@ -37,14 +39,16 @@ class EfficientSam:
         with self._lock:
             logger.debug("Computing image embedding...")
             image = imgviz.rgba2rgb(self._image)
-            batched_images = image.transpose(2, 0, 1)[None].astype(np.float32) / 255.0
+            batched_images = image.transpose(
+                2, 0, 1)[None].astype(np.float32) / 255.0
             (self._image_embedding,) = self._encoder_session.run(
                 output_names=None,
                 input_feed={"batched_images": batched_images},
             )
             if len(self._image_embedding_cache) > 10:
                 self._image_embedding_cache.popitem(last=False)
-            self._image_embedding_cache[self._image.tobytes()] = self._image_embedding
+            self._image_embedding_cache[self._image.tobytes(
+            )] = self._image_embedding
             logger.debug("Done computing image embedding.")
 
     def _get_image_embedding(self):
@@ -64,7 +68,8 @@ class EfficientSam:
         )
 
     def predict_polygon_from_points(self, points, point_labels):
-        mask = self.predict_mask_from_points(points=points, point_labels=point_labels)
+        mask = self.predict_mask_from_points(
+            points=points, point_labels=point_labels)
         return _utils.compute_polygon_from_mask(mask=mask)
 
 
@@ -96,5 +101,6 @@ def _compute_mask_from_points(
     )
 
     if 0:
-        imgviz.io.imsave("mask.jpg", imgviz.label2rgb(mask, imgviz.rgb2gray(image)))
+        imgviz.io.imsave("mask.jpg", imgviz.label2rgb(
+            mask, imgviz.rgb2gray(image)))
     return mask

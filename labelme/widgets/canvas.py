@@ -43,7 +43,8 @@ class Canvas(QtWidgets.QWidget):
         self.double_click = kwargs.pop("double_click", "close")
         if self.double_click not in [None, "close"]:
             raise ValueError(
-                "Unexpected value for double_click event: {}".format(self.double_click)
+                "Unexpected value for double_click event: {}".format(
+                    self.double_click)
             )
         self.num_backups = kwargs.pop("num_backups", 10)
         self._crosshair = kwargs.pop(
@@ -303,7 +304,8 @@ class Canvas(QtWidgets.QWidget):
                 self.boundedMoveShapes(self.selectedShapesCopy, pos)
                 self.repaint()
             elif self.selectedShapes:
-                self.selectedShapesCopy = [s.copy() for s in self.selectedShapes]
+                self.selectedShapesCopy = [s.copy()
+                                           for s in self.selectedShapes]
                 self.repaint()
             return
 
@@ -440,7 +442,8 @@ class Canvas(QtWidgets.QWidget):
                         if self.createMode in ["ai_polygon", "ai_mask"]
                         else self.createMode
                     )
-                    self.current.addPoint(pos, label=0 if is_shift_pressed else 1)
+                    self.current.addPoint(
+                        pos, label=0 if is_shift_pressed else 1)
                     if self.createMode == "point":
                         self.finalise()
                     elif (
@@ -567,7 +570,8 @@ class Canvas(QtWidgets.QWidget):
                     self.setHiding()
                     if shape not in self.selectedShapes:
                         if multiple_selection_mode:
-                            self.selectionChanged.emit(self.selectedShapes + [shape])
+                            self.selectionChanged.emit(
+                                self.selectedShapes + [shape])
                         else:
                             self.selectionChanged.emit([shape])
                         self.hShapeIsSelected = False
@@ -746,13 +750,15 @@ class Canvas(QtWidgets.QWidget):
                 label=self.line.point_labels[1],
             )
             points = self._ai_model.predict_polygon_from_points(
-                points=[[point.x(), point.y()] for point in drawing_shape.points],
+                points=[[point.x(), point.y()]
+                        for point in drawing_shape.points],
                 point_labels=drawing_shape.point_labels,
             )
             if len(points) > 2:
                 drawing_shape.setShapeRefined(
                     shape_type="polygon",
-                    points=[QtCore.QPointF(point[0], point[1]) for point in points],
+                    points=[QtCore.QPointF(point[0], point[1])
+                            for point in points],
                     point_labels=[1] * len(points),
                 )
                 drawing_shape.fill = self.fillDrawing()
@@ -765,10 +771,12 @@ class Canvas(QtWidgets.QWidget):
                 label=self.line.point_labels[1],
             )
             mask = self._ai_model.predict_mask_from_points(
-                points=[[point.x(), point.y()] for point in drawing_shape.points],
+                points=[[point.x(), point.y()]
+                        for point in drawing_shape.points],
                 point_labels=drawing_shape.point_labels,
             )
-            y1, x1, y2, x2 = imgviz.instances.masks_to_bboxes([mask])[0].astype(int)
+            y1, x1, y2, x2 = imgviz.instances.mask_to_bbox([mask])[
+                0].astype(int)
             drawing_shape.setShapeRefined(
                 shape_type="mask",
                 points=[QtCore.QPointF(x1, y1), QtCore.QPointF(x2, y2)],
@@ -803,11 +811,13 @@ class Canvas(QtWidgets.QWidget):
             # convert points to polygon by an AI model
             assert self.current.shape_type == "points"
             points = self._ai_model.predict_polygon_from_points(
-                points=[[point.x(), point.y()] for point in self.current.points],
+                points=[[point.x(), point.y()]
+                        for point in self.current.points],
                 point_labels=self.current.point_labels,
             )
             self.current.setShapeRefined(
-                points=[QtCore.QPointF(point[0], point[1]) for point in points],
+                points=[QtCore.QPointF(point[0], point[1])
+                        for point in points],
                 point_labels=[1] * len(points),
                 shape_type="polygon",
             )
@@ -815,10 +825,12 @@ class Canvas(QtWidgets.QWidget):
             # convert points to mask by an AI model
             assert self.current.shape_type == "points"
             mask = self._ai_model.predict_mask_from_points(
-                points=[[point.x(), point.y()] for point in self.current.points],
+                points=[[point.x(), point.y()]
+                        for point in self.current.points],
                 point_labels=self.current.point_labels,
             )
-            y1, x1, y2, x2 = imgviz.instances.masks_to_bboxes([mask])[0].astype(int)
+            y1, x1, y2, x2 = imgviz.instances.mask_to_bbox([mask])[
+                0].astype(int)
             self.current.setShapeRefined(
                 shape_type="mask",
                 points=[QtCore.QPointF(x1, y1), QtCore.QPointF(x2, y2)],
@@ -937,7 +949,8 @@ class Canvas(QtWidgets.QWidget):
 
     def moveByKeyboard(self, offset):
         if self.selectedShapes:
-            self.boundedMoveShapes(self.selectedShapes, self.prevPoint + offset)
+            self.boundedMoveShapes(self.selectedShapes,
+                                   self.prevPoint + offset)
             self.repaint()
             self.movingShape = True
 
