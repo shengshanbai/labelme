@@ -2,9 +2,9 @@ import os.path as osp
 from math import sqrt
 
 import numpy as np
-from qtpy import QtCore
-from qtpy import QtGui
-from qtpy import QtWidgets
+from PySide6 import QtCore
+from PySide6 import QtGui
+from PySide6 import QtWidgets
 
 here = osp.dirname(osp.abspath(__file__))
 
@@ -35,7 +35,7 @@ def newAction(
     checked=False,
 ):
     """Create a new action and assign callbacks, shortcuts, etc."""
-    a = QtWidgets.QAction(text, parent)
+    a = QtGui.QAction(QtGui.QIcon(), text, parent)
     if icon is not None:
         a.setIconText(text.replace(" ", "\n"))
         a.setIcon(newIcon(icon))
@@ -67,7 +67,7 @@ def addActions(widget, actions):
 
 
 def labelValidator():
-    return QtGui.QRegExpValidator(QtCore.QRegExp(r"^[^ \t].+"), None)
+    return QtGui.QRegularExpressionValidator(QtCore.QRegularExpression(r"^[^ \t].+"), None)
 
 
 class struct(object):

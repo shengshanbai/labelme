@@ -1,14 +1,11 @@
 import re
 
-from qtpy import QT_VERSION
-from qtpy import QtCore
-from qtpy import QtGui
-from qtpy import QtWidgets
+from PySide6 import QtCore
+from PySide6 import QtGui
+from PySide6 import QtWidgets
 
 import labelme.utils
 from labelme.logger import logger
-
-QT5 = QT_VERSION[0] == "5"
 
 
 # TODO(unknown):
@@ -52,7 +49,8 @@ class LabelDialog(QtWidgets.QDialog):
         self.edit_group_id = QtWidgets.QLineEdit()
         self.edit_group_id.setPlaceholderText("Group ID")
         self.edit_group_id.setValidator(
-            QtGui.QRegExpValidator(QtCore.QRegExp(r"\d*"), None)
+            QtGui.QRegularExpressionValidator(
+                QtCore.QRegularExpression(r"\d*"), None)
         )
         layout = QtWidgets.QVBoxLayout()
         if show_text_field:
@@ -66,24 +64,29 @@ class LabelDialog(QtWidgets.QDialog):
             QtCore.Qt.Horizontal,
             self,
         )
-        bb.button(bb.Ok).setIcon(labelme.utils.newIcon("done"))
-        bb.button(bb.Cancel).setIcon(labelme.utils.newIcon("undo"))
+        bb.button(QtWidgets.QDialogButtonBox.Ok).setIcon(
+            labelme.utils.newIcon("done"))
+        bb.button(QtWidgets.QDialogButtonBox.Cancel).setIcon(
+            labelme.utils.newIcon("undo"))
         bb.accepted.connect(self.validate)
         bb.rejected.connect(self.reject)
         layout.addWidget(bb)
         # label_list
         self.labelList = QtWidgets.QListWidget()
         if self._fit_to_content["row"]:
-            self.labelList.setHorizontalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+            self.labelList.setHorizontalScrollBarPolicy(
+                QtCore.Qt.ScrollBarAlwaysOff)
         if self._fit_to_content["column"]:
-            self.labelList.setVerticalScrollBarPolicy(QtCore.Qt.ScrollBarAlwaysOff)
+            self.labelList.setVerticalScrollBarPolicy(
+                QtCore.Qt.ScrollBarAlwaysOff)
         self._sort_labels = sort_labels
         if labels:
             self.labelList.addItems(labels)
         if self._sort_labels:
             self.labelList.sortItems()
         else:
-            self.labelList.setDragDropMode(QtWidgets.QAbstractItemView.InternalMove)
+            self.labelList.setDragDropMode(
+                QtWidgets.QAbstractItemView.InternalMove)
         self.labelList.currentItemChanged.connect(self.labelSelected)
         self.labelList.itemDoubleClicked.connect(self.labelDoubleClicked)
         self.labelList.setFixedHeight(150)
@@ -105,12 +108,6 @@ class LabelDialog(QtWidgets.QDialog):
         self.setLayout(layout)
         # completion
         completer = QtWidgets.QCompleter()
-        if not QT5 and completion != "startswith":
-            logger.warn(
-                "completion other than 'startswith' is only "
-                "supported with Qt5. Using 'startswith'"
-            )
-            completion = "startswith"
         if completion == "startswith":
             completer.setCompletionMode(QtWidgets.QCompleter.InlineCompletion)
             # Default settings.
@@ -205,7 +202,8 @@ class LabelDialog(QtWidgets.QDialog):
                 self.labelList.sizeHintForRow(0) * self.labelList.count() + 2
             )
         if self._fit_to_content["column"]:
-            self.labelList.setMinimumWidth(self.labelList.sizeHintForColumn(0) + 2)
+            self.labelList.setMinimumWidth(
+                self.labelList.sizeHintForColumn(0) + 2)
         # if text is None, the previous label in self.edit is kept
         if text is None:
             text = self.edit.text()

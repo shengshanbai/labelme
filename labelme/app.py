@@ -10,10 +10,10 @@ import webbrowser
 
 import imgviz
 import natsort
-from qtpy import QtCore
-from qtpy import QtGui
-from qtpy import QtWidgets
-from qtpy.QtCore import Qt
+from PySide6 import QtCore
+from PySide6 import QtGui
+from PySide6 import QtWidgets
+from PySide6.QtCore import Qt
 
 from labelme import PY2
 from labelme import __appname__
@@ -592,7 +592,7 @@ class MainWindow(QtWidgets.QMainWindow):
             fitWidth,
         )
         self.zoomMode = self.FIT_WINDOW
-        fitWindow.setChecked(Qt.Checked)
+        fitWindow.setChecked(True)
         self.scalers = {
             self.FIT_WINDOW: self.scaleFitWindow,
             self.FIT_WIDTH: self.scaleFitWidth,
@@ -1079,7 +1079,7 @@ class MainWindow(QtWidgets.QMainWindow):
         files = [f for f in self.recentFiles if f != current and exists(f)]
         for i, f in enumerate(files):
             icon = utils.newIcon("labels")
-            action = QtWidgets.QAction(
+            action = QtGui.QAction(
                 icon, "&%d %s" % (i + 1, QtCore.QFileInfo(f).fileName()), self
             )
             action.triggered.connect(functools.partial(self.loadRecent, f))

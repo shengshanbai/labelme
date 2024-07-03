@@ -3,8 +3,8 @@ import math
 
 import numpy as np
 import skimage.measure
-from qtpy import QtCore
-from qtpy import QtGui
+from PySide6 import QtCore
+from PySide6 import QtGui
 
 import labelme.utils
 from labelme.logger import logger
@@ -191,7 +191,8 @@ class Shape(object):
                 else self.fill_color.getRgb()
             )
             image_to_draw[self.mask] = fill_color
-            qimage = QtGui.QImage.fromData(labelme.utils.img_arr_to_data(image_to_draw))
+            qimage = QtGui.QImage.fromData(
+                labelme.utils.img_arr_to_data(image_to_draw))
             painter.drawImage(
                 int(round(self.points[0].x())),
                 int(round(self.points[0].y())),
@@ -199,7 +200,8 @@ class Shape(object):
             )
 
             line_path = QtGui.QPainterPath()
-            contours = skimage.measure.find_contours(np.pad(self.mask, pad_width=1))
+            contours = skimage.measure.find_contours(
+                np.pad(self.mask, pad_width=1))
             for contour in contours:
                 contour += [self.points[0].y(), self.points[0].x()]
                 line_path.moveTo(contour[0, 1], contour[0, 0])

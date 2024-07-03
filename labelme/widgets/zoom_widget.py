@@ -1,6 +1,6 @@
-from qtpy import QtCore
-from qtpy import QtGui
-from qtpy import QtWidgets
+from PySide6 import QtCore
+from PySide6 import QtGui
+from PySide6 import QtWidgets
 
 
 class ZoomWidget(QtWidgets.QSpinBox):
@@ -17,5 +17,5 @@ class ZoomWidget(QtWidgets.QSpinBox):
     def minimumSizeHint(self):
         height = super(ZoomWidget, self).minimumSizeHint().height()
         fm = QtGui.QFontMetrics(self.font())
-        width = fm.width(str(self.maximum()))
+        width = int(fm.maxWidth() * 25)
         return QtCore.QSize(width, height)

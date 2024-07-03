@@ -1,9 +1,9 @@
-from qtpy import QtCore
-from qtpy import QtGui
-from qtpy import QtWidgets
-from qtpy.QtCore import Qt
-from qtpy.QtGui import QPalette
-from qtpy.QtWidgets import QStyle
+from PySide6 import QtCore
+from PySide6 import QtGui
+from PySide6 import QtWidgets
+from PySide6.QtCore import Qt
+from PySide6.QtGui import QPalette
+from PySide6.QtWidgets import QStyle
 
 
 # https://stackoverflow.com/a/2039745/4158863
@@ -33,7 +33,8 @@ class HTMLDelegate(QtWidgets.QStyledItemDelegate):
         if option.state & QStyle.State_Selected:
             ctx.palette.setColor(
                 QPalette.Text,
-                option.palette.color(QPalette.Active, QPalette.HighlightedText),
+                option.palette.color(
+                    QPalette.Active, QPalette.HighlightedText),
             )
         else:
             ctx.palette.setColor(
@@ -140,7 +141,8 @@ class LabelListWidget(QtWidgets.QListView):
 
     def itemSelectionChangedEvent(self, selected, deselected):
         selected = [self.model().itemFromIndex(i) for i in selected.indexes()]
-        deselected = [self.model().itemFromIndex(i) for i in deselected.indexes()]
+        deselected = [self.model().itemFromIndex(i)
+                      for i in deselected.indexes()]
         self.itemSelectionChanged.emit(selected, deselected)
 
     def itemDoubleClickedEvent(self, index):
