@@ -87,6 +87,7 @@ class LabelFile(object):
 
             if "imageData" in data and data["imageData"] is not None:
                 imageData = base64.b64decode(data["imageData"])
+            else:
                 # relative path from label file to relative path from cwd
                 imagePath = osp.join(osp.dirname(filename), data["imagePath"])
                 imageData = self.load_image_file(imagePath)
